@@ -275,8 +275,24 @@ strict $graph
             Out-Null
             Write-CustomHost "Visualization exported to path: $($output.fullname)" -Indentation 0 -color Magenta -AddTime
             Write-CustomHost "Finished Azure visualization." -Indentation 0 -color Magenta -AddTime
-        }
         #endregion graph-generation
+
+        #region replace png in svg by base64 encoded strings
+            if($OutputFormat -eq "svg") {
+                $images = Select-String -Path $($output.fullname) -Pattern '<image xlink:href=".*png".*>' -AllMatches
+                foreach($match in $images) {
+                    $matchFound = $match -Match '"(.*png)"'
+                    if ($matchFound -eq $false) {
+                        continue
+                    }
+                    $iconPath = $Matches.Item(1)
+                    $iconContents = Get-Content $iconPath -AsByteStream
+                    $iconEncoded = [convert]::ToBase64String($iconContents)
+                    ((Get-Content -Path $($output.fullname) -Raw) -Replace $iconPath, "data:image/png;base64,$($iconEncoded)") | Set-Content -Path $($output.fullname)
+                }
+            }
+        }
+        #endregion replace png in svg by bas64 encoded strings
     }
     catch {
         $_
