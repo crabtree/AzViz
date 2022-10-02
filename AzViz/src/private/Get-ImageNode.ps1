@@ -30,12 +30,14 @@ Function Get-ImageNode {
 
     $Path = $images[$Type]
     if ($Path) {
-        '"{0}" [label=<<TABLE border="0" cellborder="0" cellpadding="0"><TR><TD ALIGN="center" colspan="2"><img src="{1}"/></TD></TR>{2}</TABLE>>;fillcolor="white";shape="none";penwidth="1";fontname="Courier New";]' -f $Name, $(Join-Path $IconPath $images[$Type]), $TR
+        $IconFullPath = Join-Path $IconPath $images[$Type]
     }
     else {
-        '"{0}" [label=<<TABLE border="0" cellborder="0" cellpadding="0"><TR><TD ALIGN="center" colspan="2"><img src="{1}"/></TD></TR>{2}</TABLE>>;fillcolor="white";shape="none";penwidth="1";fontname="Courier New";]' -f $Name, $(Join-Path $IconPath $images["resources"]), $TR
+        $IconFullPath = Join-Path $IconPath $images["resources"]
     }
-
+    $IconContents = Get-Content $IconFullPath -AsByteStream
+    $IconEncoded = [convert]::ToBase64String($IconContents)
+    '"{0}" [label=<<TABLE border="0" cellborder="0" cellpadding="0"><TR><TD ALIGN="center" colspan="2"><img src="data:image/png;base64, {1}"/></TD></TR>{2}</TABLE>>;fillcolor="white";shape="none";penwidth="1";fontname="Courier New";]' -f $Name, $IconEncoded, $TR
 }
 
 
